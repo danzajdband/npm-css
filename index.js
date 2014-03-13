@@ -7,8 +7,6 @@ var resolve = require('resolve');
 var cssp = require('cssp');
 var traverse = require('traverse');
 
-// local
-var prefix = require('./lib/prefix');
 
 // replace nodes with tree
 // nodes is an array representing a node
@@ -79,11 +77,11 @@ function flatten(file, modules) {
 
             modules.push(filepath);
 
-            // run css file through tree -> flatten -> prefix
+            // run css file through tree -> flatten 
             // get required module as a css tree
             // replace @import node with new tree
             return replace(self.parent.node,
-                           prefix(pkg_name, flatten(filepath, modules)));
+                           flatten(filepath, modules));
         }
 
         var filepath = path.join(base, name);
@@ -103,20 +101,17 @@ function flatten(file, modules) {
         // path is a dir
         var pkginfo = path.join(filepath, 'package.json');
 
-        // package.json exists for path
-        // use style info and prefix
+        // use style info 
         if (fs.existsSync(pkginfo)) {
             var info = JSON.parse(fs.readFileSync(pkginfo));
             filepath = path.join(base, name, info.style || 'index.css')
             return replace(self.parent.node,
-                           prefix(info.name, flatten(filepath, modules)));
+                           flatten(filepath, modules));
         }
 
         // no package.json, try index.css in the dir
         filepath = path.join(filepath, 'index.css');
 
-        // do not prefix if just loading index.css from a dir
-        // allows for easier organization of multi css files without prefixing
         if (fs.existsSync(filepath)) {
             return replace(self.parent.node,
                            flatten(filepath, modules));
